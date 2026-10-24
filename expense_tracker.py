@@ -7,14 +7,22 @@ def menu():
     print("2. View Expenses")
     print("3. View Total")
     print("4. Category Total")
-    print("5. Exit")
+    print("5. Delete")
+    print("6. Exit")
 
-def save_data(_date,_category,_amount):
+def save_data(_date,_category,_amount,_note):
     with open("expenses.csv" , "a",newline="") as file:
         writer = csv.writer(file)
-        row=[_date,_category,_amount]
+        row=[_date,_category,_amount,_note]
         writer.writerow(row)
-                   
+
+def rewrite_file(expenses):
+    with open("expenses.csv" , "w",newline="") as file:
+            writer = csv.writer(file)
+            for e in expenses:
+                row=[e["Date"],e["Category"],e["Amount"],e["Note"]]
+                writer.writerow(row)
+
 
 def load_data(expenses):
     try:
@@ -22,9 +30,16 @@ def load_data(expenses):
             lines=csv.reader(file)
             for line in lines:
                 try:
-                    expense_date,category,amount=line
+                    if(len(line)==4):
+                        expense_date,category,amount,note=line
+                    elif(len(line)==3):
+                         expense_date,category,amount=line
+                         note="-"
+                    else:
+                        print("Skipping invalid row")
+                        continue
                     date_object=date.fromisoformat(expense_date)
-                    expense={"Date": date_object,"Category":category,"Amount":int(amount)}
+                    expense={"Date": date_object,"Category":category,"Amount":int(amount),"Note":note}
                     expenses.append(expense)
                 except ValueError:
                     print("Skipping invalid row")
@@ -47,33 +62,36 @@ def add_expense(expenses):
                 print("Amount must be greater than zero")
                 continue
         break
-
-    _date=date.today()   
-    expenses.append({"Date":_date,"Category":category,"Amount":amount})
-    save_data(_date,category,amount)
+    note=input("Write note: ").strip()
+    if not note:
+         note="-"
+    _date=date.today()
+    expenses.append({"Date":_date,"Category":category,"Amount":amount,"Note":note})
+    save_data(_date,category,amount,note)
         
 def view_expenses(expenses):
     if len(expenses)==0:
         print("No expenses have been recorded")
     else:
-        for e in expenses:
-            print(f" Date : {e['Date']} Category: {e['Category']}  Amount : {e['Amount']} PKR")
+        for index,e in enumerate(expenses,start=1):
+            print(f"Index : {index} Date : {e['Date']} Category: {e['Category']}  Amount : {e['Amount']} PKR , Note : {e['Note']}")
 
 def calculate_total(expenses):
   return sum(e["Amount"] for e in expenses)
 
 
 def category_total(expenses):
+    if len(expenses)==0:
+        print("No expenses have been recorded")
+        return
+    
     totals={}
     for e in expenses:
         category=e["Category"]
         totals[category]=totals.get(category,0)+e["Amount"]
-
-    if len(expenses)==0:
-            print("No expenses have been recorded")
-    else:
-        for category,amount in totals.items():
-            print(f"Category : {category} Amount: {amount} PKR")
+    
+    for category,amount in totals.items():
+        print(f"Category : {category} Amount: {amount} PKR")
 
 
 def show_total(expenses):
@@ -86,6 +104,29 @@ def show_average(expenses):
         return calculate_total(expenses)/len(expenses)
     return 0
 
+def delete_expense(expenses):
+    if len(expenses)==0:
+            print("No expenses have been recorded")
+            return
+    
+    view_expenses(expenses)
+    while True:
+            try:
+                index=int(input("Enter Index to delete expense:"))
+            except ValueError:
+                    print("Index must be Integer")
+                    continue
+            if index<=0 or index>len(expenses):
+                    print(f"Index must be greater than zero or less than {len(expenses)+1}")
+                    continue
+            break
+    
+    expenses.pop(index-1)
+    rewrite_file(expenses)
+    print("Expense deleted")
+    
+
+
 def main():
     expenses=[]
     load_data(expenses)
@@ -94,7 +135,7 @@ def main():
         try:
             choice=int(input("Choose an option:"))
         except ValueError:
-            print("Choose Between 1-5")
+            print("Choose Between 1-6")
         else:
             if choice==1:
                 add_expense(expenses)
@@ -105,6 +146,8 @@ def main():
             elif choice==4:
                 category_total(expenses)
             elif choice==5:
+                delete_expense(expenses)
+            elif choice==6:
                 print("Exiting.......")
                 break
             else:
