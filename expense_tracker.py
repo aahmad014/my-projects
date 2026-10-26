@@ -10,12 +10,6 @@ def menu():
     print("5. Delete")
     print("6. Exit")
 
-def save_data(_date,_category,_amount,_note):
-    with open("expenses.csv" , "a",newline="") as file:
-        writer = csv.writer(file)
-        row=[_date,_category,_amount,_note]
-        writer.writerow(row)
-
 def rewrite_file(expenses):
     with open("expenses.csv" , "w",newline="") as file:
             writer = csv.writer(file)
@@ -47,6 +41,7 @@ def load_data(expenses):
         pass
 
 def add_expense(expenses):
+    today_date=date.today()
     category=input("Select Category:").lower().strip()
 
     while not category:
@@ -65,16 +60,33 @@ def add_expense(expenses):
     note=input("Write note: ").strip()
     if not note:
          note="-"
-    _date=date.today()
+
+    while True: 
+            try:
+                date_text=(input("Enter Date(YYYY-MM-DD, Enter for today):").strip())
+                if not date_text:
+                     _date=today_date
+                else:
+                    _date= date.fromisoformat(date_text)
+            except ValueError:
+                    print("Incorrect Date")
+                    continue
+            if _date>today_date:
+                    print("Can't add future date")
+                    continue
+            break
+
     expenses.append({"Date":_date,"Category":category,"Amount":amount,"Note":note})
-    save_data(_date,category,amount,note)
+    expenses.sort(key=lambda e :e['Date'])
+    rewrite_file(expenses)
         
 def view_expenses(expenses):
+    expenses.sort(key=lambda e :e['Date'])
     if len(expenses)==0:
         print("No expenses have been recorded")
     else:
         for index,e in enumerate(expenses,start=1):
-            print(f"Index : {index} Date : {e['Date']} Category: {e['Category']}  Amount : {e['Amount']} PKR , Note : {e['Note']}")
+            print(f"{index}) {e['Date']} Category: {e['Category']}  Amount : {e['Amount']} PKR , Note : {e['Note']}")
 
 def calculate_total(expenses):
   return sum(e["Amount"] for e in expenses)
@@ -117,13 +129,16 @@ def delete_expense(expenses):
                     print("Index must be Integer")
                     continue
             if index<=0 or index>len(expenses):
-                    print(f"Index must be greater than zero or less than {len(expenses)+1}")
+                    print(f"Enter a number between 1 and {len(expenses)}")
                     continue
             break
-    
-    expenses.pop(index-1)
-    rewrite_file(expenses)
-    print("Expense deleted")
+    confirmation=input(f"Are you sure to delete an expense at #{index} (y/n): ").strip().lower()
+    if(confirmation=="y"):
+        expenses.pop(index-1)
+        rewrite_file(expenses)
+        print(f"Expense deleted at #{index}")
+    else:
+         print("Cancelled")
     
 
 
