@@ -8,9 +8,11 @@ def menu():
     print("3. View Total")
     print("4. Category Total")
     print("5. Delete")
-    print("6. Exit")
+    print("6. Highest Expense")
+    print("7. Lowest Expense")
+    print("8. Exit")
 
-def rewrite_file(expenses):
+def write_file(expenses):
     with open("expenses.csv" , "w",newline="") as file:
             writer = csv.writer(file)
             for e in expenses:
@@ -35,8 +37,10 @@ def load_data(expenses):
                     date_object=date.fromisoformat(expense_date)
                     expense={"Date": date_object,"Category":category,"Amount":int(amount),"Note":note}
                     expenses.append(expense)
+            
                 except ValueError:
                     print("Skipping invalid row")
+        expenses.sort(key=lambda e: e['Date'])
     except FileNotFoundError:
         pass
 
@@ -78,10 +82,10 @@ def add_expense(expenses):
 
     expenses.append({"Date":_date,"Category":category,"Amount":amount,"Note":note})
     expenses.sort(key=lambda e :e['Date'])
-    rewrite_file(expenses)
+    write_file(expenses)
         
 def view_expenses(expenses):
-    expenses.sort(key=lambda e :e['Date'])
+    
     if len(expenses)==0:
         print("No expenses have been recorded")
     else:
@@ -116,10 +120,28 @@ def show_average(expenses):
         return calculate_total(expenses)/len(expenses)
     return 0
 
+def show_lowest(expenses):
+    if len(expenses)==0:
+                 print("No expenses have been recorded")
+                 return
+    lowest=min(expenses,key =lambda e : e['Amount'])
+    print("Lowest expense:")
+    print(f"{lowest['Date']} Category: {lowest['Category']}  Amount : {lowest['Amount']} PKR , Note : {lowest['Note']}")
+
+
+def show_highest(expenses):
+    if len(expenses)==0:
+                 print("No expenses have been recorded")
+                 return
+    highest=max(expenses,key =lambda e : e['Amount'])
+    print("Highest expense:")
+    print(f"{highest['Date']} Category: {highest['Category']}  Amount : {highest['Amount']} PKR , Note : {highest['Note']}")
+
 def delete_expense(expenses):
     if len(expenses)==0:
             print("No expenses have been recorded")
             return
+
     
     view_expenses(expenses)
     while True:
@@ -135,7 +157,7 @@ def delete_expense(expenses):
     confirmation=input(f"Are you sure to delete an expense at #{index} (y/n): ").strip().lower()
     if(confirmation=="y"):
         expenses.pop(index-1)
-        rewrite_file(expenses)
+        write_file(expenses)
         print(f"Expense deleted at #{index}")
     else:
          print("Cancelled")
@@ -150,7 +172,7 @@ def main():
         try:
             choice=int(input("Choose an option:"))
         except ValueError:
-            print("Choose Between 1-6")
+            print("Choose Between 1-8")
         else:
             if choice==1:
                 add_expense(expenses)
@@ -163,6 +185,10 @@ def main():
             elif choice==5:
                 delete_expense(expenses)
             elif choice==6:
+                show_highest(expenses)
+            elif choice==7:
+                show_lowest(expenses)
+            elif choice==8:
                 print("Exiting.......")
                 break
             else:
