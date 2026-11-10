@@ -11,8 +11,10 @@ A simple command-line app to record and review daily spending, built with Python
 - See total spending, number of expenses, and average per expense
 - See totals for each category
 - Find the highest and lowest expense
-- Data is saved to a CSV file, so nothing is lost when you close the program
-- Input validation for empty categories, invalid amounts, invalid dates, and invalid delete numbers
+- Set a monthly budget and see spent, remaining, and percentage used
+- Get a warning when this month's spending reaches 80% of the budget, and when it is fully used
+- Data is saved to CSV and text files, so nothing is lost when you close the program
+- Input validation for categories, amounts, dates, budget, and delete numbers
 - Skips corrupted rows and still loads older 3-column data files
 
 ## How to run
@@ -34,22 +36,25 @@ python expense_tracker.py
 5. Delete
 6. Highest Expense
 7. Lowest Expense
-8. Exit
+8. Set Budget
+9. Show Budget Detail
+10. Exit
 ```
 
 ## What I learned
-- Reading and writing CSV files
+- Reading and writing CSV and text files
 - Validating user input with try/except
 - Organizing code into small functions
 - Using dictionaries to group data
 - Working with dates using the datetime module
 - Sorting lists of dictionaries with a key function
 - Using lambda with sort, max, and min
+- Calculating values fresh instead of storing stale copies
 - Keeping data in memory and in the file in sync
 - Handling file format changes without losing old data
 
 ## Planned features
 - Edit expenses
-- Monthly budget warnings
 - SQLite database
+- Charts and monthly reports
 - Web interface and AI-powered entry
